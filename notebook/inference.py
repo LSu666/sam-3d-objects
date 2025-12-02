@@ -104,7 +104,24 @@ class Inference:
         mask: Optional[Union[None, Image.Image, np.ndarray]],
         seed: Optional[int] = None,
         pointmap=None,
+        clip_pointmap_beyond_scale: Optional[float] = None,
     ) -> dict:
+        """Run the reconstruction pipeline.
+
+        Args:
+            image: RGB image to reconstruct.
+            mask: Binary mask for the visible region of the object.
+            seed: Optional random seed for reproducibility.
+            pointmap: Optional pre-computed pointmap.
+            clip_pointmap_beyond_scale: If provided, clip the predicted pointmap
+                depth to ``mask_distance * clip_pointmap_beyond_scale`` to
+                enforce that only the masked, visible portion of the object is
+                reconstructed. Values close to ``1.0`` keep only the points
+                near the observed mask while larger numbers allow more
+                completion behind the mask.
+        """
+        if clip_pointmap_beyond_scale is not None:
+            self._pipeline.clip_pointmap_beyond_scale = clip_pointmap_beyond_scale
         image = self.merge_mask_to_rgba(image, mask)
         return self._pipeline.run(
             image,
